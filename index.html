@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Skaner plomb</title>
+
+<script src="https://unpkg.com/html5-qrcode"></script>
+
+<style>
+
+body{
+    background:#111;
+    color:white;
+    font-family:Arial;
+    padding:15px;
+}
+
+h1{
+    text-align:center;
+}
+
+.panel{
+    background:#222;
+    padding:15px;
+    border-radius:10px;
+    margin-bottom:15px;
+}
+
+input,button{
+    width:100%;
+    padding:15px;
+    margin-top:8px;
+    font-size:18px;
+    border-radius:8px;
+    border:0;
+}
+
+button{
+    background:#1976d2;
+    color:white;
+}
+
+.red{
+    background:#c62828;
+}
+
+.green{
+    background:#2e7d32;
+}
+
+.licznik{
+    font-size:24px;
+    margin:10px;
+}
+
+#reader{
+    width:100%;
+}
+
+#lista{
+    max-height:300px;
+    overflow:auto;
+}
+
+.element{
+    border-bottom:1px solid #555;
+    padding:8px;
+}
+
+.ok{
+    color:#4caf50;
+}
+
+.blok{
+    color:#ff5252;
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<h1>📷 SKANER PLOMB</h1>
+
+
+<div class="panel">
+
+<input id="rejestracja"
+placeholder="Numer rejestracyjny">
+
+
+<input id="operator"
+placeholder="Operator">
+
+
+<button onclick="startScanner()">
+URUCHOM APARAT
+</button>
+
+
+<button onclick="stopScanner()">
+ZATRZYMAJ APARAT
+</button>
+
+
+</div>
+
+
+
+<div class="panel">
+
+<div id="reader"></div>
+
+<p id="komunikat"></p>
+
+</div>
+
+
+
+
+<div class="panel">
+
+<div class="licznik">
+01:
+<span id="ile01">0</span>
+</div>
+
+
+<div class="licznik">
+05:
+<span id="ile05">0</span>
+</div>
+
+
+<div class="licznik">
+RAZEM:
+<span id="razem">0</span>
+</div>
+
+
+</div>
+
+
+
+
+<div class="panel">
+
+<h3>Skanowane plomby</h3>
+
+<div id="lista"></div>
+
+</div>
+
+
+
+
+
+<script>
+
+
+let plomby=[];
+
+let scanner=null;
+
+
+
+function startScanner(){
+
+
+if(scanner)
+return;
+
+
+scanner=new Html5Qrcode("reader");
+
+
+
+scanner.start(
+
+{
+facingMode:"environment"
+},
+
+{
+fps:10,
+qrbox:250
+},
+
+
+(kod)=>{
+
+dodajPlombe(kod);
+
+},
+
+
+(error)=>{
+
+
+}
+
+
+).catch(function(err){
+
+document.getElementById("komunikat").innerHTML=
+"Brak dostępu do aparatu: "+err;
+
+});
+
+
+}
+
+
+
+
+
+function stopScanner(){
+
+
+if(scanner){
+
+
+scanner.stop().then(()=>{
+
+
+scanner.clear();
+
+scanner=null;
+
+
+});
+
+
+}
+
+
+}
+
+
+
+
+
+
+function dodajPlombe(kod){
+
+
+let info=
+document.getElementById("komunikat");
+
+
+
+if(
+!kod.startsWith("01")
+&&
+!kod.startsWith("05")
+){
+
+
+info.innerHTML=
+"❌ Nieprawidłowa plomba";
+
+
+info.className="blok";
+
+
+return;
+
+}
+
+
+
+
+
+if(
+plomby.some(x=>x.kod===kod)
+){
+
+
+info.innerHTML=
+"⚠️ Ta plomba była już zeskanowana";
+
+
+info.className="blok";
+
+
+return;
+
+}
+
+
+
+
+
+plomby.push({
+
+kod:kod,
+
+czas:new Date().toLocaleString()
+
+});
+
+
+
+info.innerHTML=
+"✅ Dodano "+kod;
+
+
+info.className="ok";
+
+
+aktualizuj();
+
+
+}
+
+
+
+
+
+function aktualizuj(){
+
+
+
+let a=
+plomby.filter(
+x=>x.kod.startsWith("01")
+).length;
+
+
+
+let b=
+plomby.filter(
+x=>x.kod.startsWith("05")
+).length;
+
+
+
+document.getElementById("ile01
