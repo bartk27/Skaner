@@ -180,7 +180,67 @@ scanner=new Html5Qrcode("reader");
 
 
 
+function startScanner(){
+
+document.getElementById("komunikat").innerHTML=
+"Uruchamianie aparatu...";
+
+
+Html5Qrcode.getCameras()
+.then(cameras=>{
+
+
+if(cameras && cameras.length){
+
+
+scanner=new Html5Qrcode("reader");
+
+
+let kamera=cameras[cameras.length-1].id;
+
+
 scanner.start(
+
+kamera,
+
+{
+fps:10,
+qrbox:250
+},
+
+(kod)=>{
+
+dodajPlombe(kod);
+
+},
+
+(error)=>{}
+
+);
+
+
+}else{
+
+
+document.getElementById("komunikat").innerHTML=
+"Nie znaleziono kamery";
+
+
+}
+
+
+})
+.catch(err=>{
+
+
+document.getElementById("komunikat").innerHTML=
+"Błąd kamery: "+err;
+
+
+});
+
+
+}
 
 {
 facingMode:"environment"
